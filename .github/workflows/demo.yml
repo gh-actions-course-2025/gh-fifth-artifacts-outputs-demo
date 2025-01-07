@@ -6,6 +6,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      script-file: ${{ steps.copy.outputs.script-file }}
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -20,6 +22,9 @@ jobs:
         run: npm run lint
       - name: Test code
         run: npm run test
+      - name: print name 
+        id: copy
+        run: echo 'script-file={}hii' >> $GITHUB_OUTPUT ';'
   build:
     needs: test
     runs-on: ubuntu-latest
@@ -49,7 +54,7 @@ jobs:
           #   dist
           #   package.json
   deploy:
-    needs: build
+    needs: [build , test]
     runs-on: ubuntu-latest
     steps:
       - name: Get build artifacts
@@ -59,6 +64,8 @@ jobs:
       - name: Output contents
         run: ls
       - name: Output filename
-        run: echo "${{ needs.build.outputs.script-file }}"
+        run: | 
+         echo "${{ needs.build.outputs.script-file }}"
+         echo "${{ needs.test.outputs.script-file }}"
       - name: Deploy
         run: echo "Deploying..."
